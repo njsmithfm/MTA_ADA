@@ -1,0 +1,19 @@
+# .github/workflows/weekly-mta-update.yml
+name: Weekly MTA Dashboard Update
+on:
+  schedule:
+    - cron: "0 8 * * 1" # Mondays at 8am UTC
+  workflow_dispatch:
+
+jobs:
+  update-charts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: pip install requests pandas
+      - run: python update_weekly_charts.py
+        env:
+          DATAWRAPPER_TOKEN: ${{ secrets.DATAWRAPPER_TOKEN }}
