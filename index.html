@@ -12,8 +12,24 @@
       h1 {
         text-align: center;
         color: #000000;
+        margin-top: 40px;
+        margin-bottom: 20px;
       }
-      .chart-container {
+      .top-charts {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 20px auto;
+        max-width: 1400px;
+      }
+      .top-chart {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+      }
+      .small-multiples {
         display: flex;
         justify-content: space-around;
         gap: 15px;
@@ -22,7 +38,7 @@
       }
       .chart {
         flex: 1;
-        min-width: 200px;
+        min-width: 150px;
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -30,75 +46,65 @@
       }
       iframe {
         display: block;
-        width:100%;
-          height: 300px;
-          margin: 10px
+        width: 100%;
+        border: none;
+      }
+      .small-multiples iframe {
+        height: 300px;
       }
     </style>
   </head>
   <body>
-    <div class="chart-container">
-
-    <div style="min-height:695px" id="datawrapper-vis-9oGDF"><script type="text/javascript" defer src="https://datawrapper.dwcdn.net/9oGDF/embed.js" charset="utf-8" data-target="#datawrapper-vis-9oGDF"></script><noscript><img src="https://datawrapper.dwcdn.net/9oGDF/full.png" alt="ADA-Approved Subway Stations (Symbol map)" /></noscript></div>
-
-  
-    <div style="min-height:541px; background: white ;" id="datawrapper-vis-SmHQc"><script type="text/javascript" defer src="https://datawrapper.dwcdn.net/SmHQc/embed.js" charset="utf-8" data-target="#datawrapper-vis-SmHQc"></script><noscript><img src="https://datawrapper.dwcdn.net/SmHQc/full.png" alt="Is Brooklyn the MTA's Most Reliably ADA-Friendly Borough? (Scatter Plot)" /></noscript></div>
-  
-
-    <h1>MTA ADA Station Availability by Borough - Last 6 Months</h1>
+    <!-- Top two large charts side by side -->
+    <div class="top-charts">
+      <div class="top-chart">
+        <div style="min-height:695px" id="datawrapper-vis-9oGDF">
+          <script type="text/javascript" defer src="https://datawrapper.dwcdn.net/9oGDF/embed.js" charset="utf-8" data-target="#datawrapper-vis-9oGDF"></script>
+          <noscript><img src="https://datawrapper.dwcdn.net/9oGDF/full.png" alt="ADA-Approved Subway Stations (Symbol map)" /></noscript>
+        </div>
+      </div>
+      
+      <div class="top-chart">
+        <div style="min-height:695px" id="datawrapper-vis-SmHQc">
+          <script type="text/javascript" defer src="https://datawrapper.dwcdn.net/SmHQc/embed.js" charset="utf-8" data-target="#datawrapper-vis-SmHQc"></script>
+          <noscript><img src="https://datawrapper.dwcdn.net/SmHQc/full.png" alt="Is Brooklyn the MTA's Most Reliably ADA-Friendly Borough? (Scatter Plot)" /></noscript>
+        </div>
+      </div>
     </div>
-    <div class="chart-container">
 
-         
+    <!-- Heading for small multiples -->
+    <h1>MTA ADA Station Availability by Borough - Last 6 Months</h1>
+    
+    <!-- Six small multiples below -->
+    <div class="small-multiples">
       <!-- Month 6 (Oldest) -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/bYfxF/"
-  
-          frameborder="0"
-          style="overflow:hidden"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/bYfxF/"></iframe>
       </div>
       
       <!-- Month 5 -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/vaXUw/"
-      
-          frameborder="0"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/vaXUw/"></iframe>
       </div>
+      
       <!-- Month 4 -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/Ber6f/"
-        
-          frameborder="0"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/Ber6f/"></iframe>
       </div>
+      
       <!-- Month 3 -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/t7mwT/"
-     
-          frameborder="0"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/t7mwT/"></iframe>
       </div>
+      
       <!-- Month 2 -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/2Lebz/"
-     
-          frameborder="0"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/2Lebz/"></iframe>
       </div>
+      
       <!-- Month 1 (Most Recent) -->
       <div class="chart">
-        <iframe
-          src="https://datawrapper.dwcdn.net/q0KSY/"
-       
-          frameborder="0"
-        ></iframe>
+        <iframe src="https://datawrapper.dwcdn.net/q0KSY/"></iframe>
       </div>
     </div>
   </body>
