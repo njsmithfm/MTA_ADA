@@ -1,47 +1,53 @@
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import os
+from dotenv import load_dotenv
 
-# Configuration
-DATAWRAPPER_TOKEN = "your_token"
+load_dotenv()
+DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN')
+
+# 6 chart IDs for 6 months
 CHART_IDS = {
-    'monday': 'chart_id_1',
-    'tuesday': 'chart_id_2',
-    'wednesday': 'chart_id_3',
-    'thursday': 'chart_id_4',
-    'friday': 'chart_id_5',
-    'saturday': 'chart_id_6',
-    'sunday': 'chart_id_7'
-    
-    # ... one for each day
+    0: 'CHART_ID_MONTH_1',  # Most recent month
+    1: 'CHART_ID_MONTH_2',
+    2: 'CHART_ID_MONTH_3',
+    3: 'CHART_ID_MONTH_4',
+    4: 'CHART_ID_MONTH_5',
+    5: 'CHART_ID_MONTH_6'   # 6 months ago
 }
 
-def get_mta_data(date):
-    """Fetch MTA data for a specific date"""
+DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN')
+
+def get_last_6_months():
+    """Get list of last 6 month start dates"""
+    today = datetime.now()
+    months = []
+    for i in range(6):
+        month_date = today - relativedelta(months=i)
+        # Format as YYYY-MM-01 for the API filter
+        months.append(month_date.strftime('%Y-%m-01T00:00:00.000'))
+    return months
+
+def get_mta_monthly_data(month):
+    """Fetch MTA data for a specific month"""
     url = "https://data.ny.gov/resource/thh2-syn7.json"
     params = {
-        "$where": f"date='{date}'",
+        "$where": f"month='{month}'",
         "$limit": 5000
     }
-    return pd.DataFrame(requests.get(url, params=params).json())
+    response = requests.get(url, params=params)
+    return pd.DataFrame(response.json())
 
-def calculate_operability(df):
-    """Calculate % of ADA stations operational by borough"""
-    results = []
-    for borough in df['borough'].unique():
-        borough_data = df[df['borough'] == borough]
-        
-        # Count operational (both directions working)
-        operational = ((borough_data['ada_northbound'] == 'Y') & 
-                      (borough_data['ada_southbound'] == 'Y')).sum()
-        total = len(borough_data)
-        
-        results.append({
-            'Borough': borough,
-            'Operability Rate': round(operational / total * 100, 1)
-        })
+def calculate_availability_by_borough(df):
+    """Format data for chart: Borough and Availability %"""
+    df['availability_pct'] = (df['availability'].astype(float) * 100).round(1)
     
-    return pd.DataFrame(results)
+    result = df[['borough', 'availability_pct']].copy()
+    result.columns = ['Borough', 'Availability %']
+    
+    return result
 
 def update_datawrapper_chart(chart_id, data, title):
     """Update a Datawrapper chart"""
@@ -68,20 +74,26 @@ def update_datawrapper_chart(chart_id, data, title):
     )
 
 # Main execution
-today = datetime.now()
-days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+months = get_last_6_months()
 
-for i in range(7):
-    date = (today - timedelta(days=6-i)).strftime('%Y-%m-%d')
-    day_name = days[(today.weekday() - 6 + i) % 7]
+for i, month in enumerate(months):
+    # Get data
+    mta_data = get_mta_monthly_data(month)
     
-    # Get and process data
-    mta_data = get_mta_data(date)
-    operability = calculate_operability(mta_data)
+    if mta_data.empty:
+        print(f"No data for {month}")
+        continue
+    
+    # Prepare chart data
+    chart_data = calculate_availability_by_borough(mta_data)
+    
+    # Format month for title (e.g., "November 2024")
+    month_name = datetime.strptime(month, '%Y-%m-%dT00:00:00.000').strftime('%B %Y')
     
     # Update chart
-    chart_id = CHART_IDS[day_name]
-    title = f"{day_name.capitalize()} - {date}"
-    update_datawrapper_chart(chart_id, operability, title)
+    chart_id = CHART_IDS[i]
+    update_datawrapper_chart(chart_id, chart_data, month_name)
+    
+    print(f"Updated chart {i+1}: {month_name}")
 
-print("All 7 charts updated!")
+print("All 6 monthly charts updated!")
