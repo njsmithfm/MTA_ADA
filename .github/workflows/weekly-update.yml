@@ -14,6 +14,6 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install requests pandas python-dateutil
-      - run: python update_weekly_charts.py
+      - run: python updateCharts.py
         env:
           DATAWRAPPER_TOKEN: ${{ secrets.DATAWRAPPER_TOKEN }}
