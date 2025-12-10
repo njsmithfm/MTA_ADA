@@ -2,7 +2,7 @@
 name: Weekly MTA Dashboard Update
 on:
   schedule:
-    - cron: "0 8 * * 1" # Mondays at 8am UTC
+    - cron: "0 13 * * 1" # Mondays at 13:00 UTC (8am EST/9am EDT)
   workflow_dispatch:
 
 jobs:
