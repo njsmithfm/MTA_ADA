@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: pip install requests pandas python-dateutil
+      - run: pip install requests pandas python-dateutil python-dotenv
       - run: python updateCharts.py
         env:
           DATAWRAPPER_TOKEN: ${{ secrets.DATAWRAPPER_TOKEN }}
