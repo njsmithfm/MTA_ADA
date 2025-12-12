@@ -6,86 +6,110 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATAWRAPPER_TOKEN = os.environ.get("DATAWRAPPER_TOKEN")
+DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN')
 
-CHART_IDS = {0: "q0KSY", 1: "2Lebz", 2: "t7mwT", 3: "Ber6f", 4: "vaXUw", 5: "bYfxF"}
+# 5 chart IDs - one per borough + systemwide
+CHART_IDS = {
+    'Manhattan': '3wJkX',
+    'Brooklyn': 'gcDaE',
+    'Queens': 'cec6j',
+    'Bronx': 'IJXO5',
+    'Systemwide': 'aveGu'
+}
 
-
-def get_available_months():
-    """Fetch all available months and return the 6 most recent"""
+def get_last_12_months_data():
+    """Fetch last 12 months of data for all boroughs"""
     url = "https://data.ny.gov/resource/thh2-syn7.json"
+    
+    # Get available months
     params = {
         "$select": "month",
         "$group": "month",
         "$order": "month DESC",
-        "$limit": 6,
+        "$limit": 12
     }
-    response = requests.get(url, params=params)
-    months = [item["month"] for item in response.json()]
-    return months
+    months_response = requests.get(url, params=params)
+    months = [item['month'] for item in months_response.json()]
+    
+    # Fetch data for all those months
+    all_data = []
+    for month in months:
+        params = {
+            "$where": f"month='{month}'",
+            "$limit": 50
+        }
+        response = requests.get(url, params=params)
+        all_data.extend(response.json())
+    
+    return pd.DataFrame(all_data)
 
-
-def get_mta_monthly_data(month):
-    """Fetch MTA data for a specific month"""
-    url = "https://data.ny.gov/resource/thh2-syn7.json"
-    params = {"$where": f"month='{month}'", "$limit": 50}
-    response = requests.get(url, params=params)
-    return pd.DataFrame(response.json())
-
-
-def calculate_availability_by_borough(df):
-    """Format data for chart: Borough and Availability %"""
-    df["availability_pct"] = (df["availability"].astype(float) * 100).round(1)
-
-    result = df[["borough", "availability_pct"]].copy()
-    result.columns = ["Borough", "Availability %"]
-
+def prepare_borough_timeseries(df, borough):
+    """Prepare time series data for a specific borough"""
+    borough_data = df[df['borough'] == borough].copy()
+    borough_data['availability_pct'] = (borough_data['availability'].astype(float) * 100).round(1)
+    borough_data['month_date'] = pd.to_datetime(borough_data['month'])
+    borough_data = borough_data.sort_values('month_date')
+    
+    result = borough_data[['month_date', 'availability_pct']].copy()
+    result['month_date'] = result['month_date'].dt.strftime('%B %Y')
+    result.columns = ['Month', 'Availability %']
+    
     return result
 
+def prepare_systemwide_timeseries(df):
+    """Calculate systemwide average availability over time"""
+    df['availability_pct'] = df['availability'].astype(float) * 100
+    df['month_date'] = pd.to_datetime(df['month'])
+    
+    systemwide = df.groupby('month_date')['availability_pct'].mean().reset_index()
+    systemwide['availability_pct'] = systemwide['availability_pct'].round(1)
+    systemwide = systemwide.sort_values('month_date')
+    
+    systemwide['month_date'] = systemwide['month_date'].dt.strftime('%B %Y')
+    systemwide.columns = ['Month', 'Availability %']
+    
+    return systemwide
 
 def update_datawrapper_chart(chart_id, data, title):
     """Update a Datawrapper chart"""
     headers = {"Authorization": f"Bearer {DATAWRAPPER_TOKEN}"}
-
+    
     requests.put(
         f"https://api.datawrapper.de/v3/charts/{chart_id}/data",
         headers=headers,
-        data=data.to_csv(index=False),
+        data=data.to_csv(index=False)
     )
-
+    
     requests.patch(
         f"https://api.datawrapper.de/v3/charts/{chart_id}",
         headers=headers,
-        json={"title": title},
+        json={"title": title}
     )
-
+    
     requests.post(
-        f"https://api.datawrapper.de/v3/charts/{chart_id}/publish", headers=headers
+        f"https://api.datawrapper.de/v3/charts/{chart_id}/publish",
+        headers=headers
     )
 
+# Main execution
+print("Fetching last 12 months of MTA data...")
+full_data = get_last_12_months_data()
 
-# Main execution - get actual available months
-months = get_available_months()
-print(f"Found {len(months)} available months")
+boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx']
 
-for i, month in enumerate(months):
-    # Get data
-    mta_data = get_mta_monthly_data(month)
+# Update borough charts
+for borough in boroughs:
+    chart_data = prepare_borough_timeseries(full_data, borough)
+    chart_id = CHART_IDS[borough]
+    title = f"{borough}"
+    update_datawrapper_chart(chart_id, chart_data, title)
+    print(f"Updated {borough} chart")
 
-    if mta_data.empty:
-        print(f"No data for {month}")
-        continue
+# Update systemwide chart
+systemwide_data = prepare_systemwide_timeseries(full_data)
+chart_id = CHART_IDS['Systemwide']
+title = "Systemwide"
+update_datawrapper_chart(chart_id, systemwide_data, title)
+print("Updated Systemwide chart")
 
-    # Prepare chart data
-    chart_data = calculate_availability_by_borough(mta_data)
-
-    # Format month for title
-    month_name = datetime.strptime(month, "%Y-%m-%dT00:00:00.000").strftime("%B %Y")
-
-    # Update chart
-    chart_id = CHART_IDS[i]
-    update_datawrapper_chart(chart_id, chart_data, month_name)
-
-    print(f"Updated chart {i+1}: {month_name}")
-
-print("All 6 monthly charts updated!")
+print("All 5 line charts updated!")
