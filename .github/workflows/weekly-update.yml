@@ -1,4 +1,4 @@
-# .github/workflows/weekly-mta-update.yml
+
 name: Weekly MTA Dashboard Update
 on:
   schedule:
