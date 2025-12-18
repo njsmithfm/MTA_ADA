@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <title>MTA ADA Operability</title>
   <style>
+    #page-wrapper {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;        /* choose a width that works for you */
+    margin:         0 auto;      /* centres the wrapper itself */
+    float: none !important;
+}
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -78,7 +85,9 @@ p{
 
   </style>
 </head>
+<div id="page-wrapper">
 <div style="display:flex; flex-direction: column; align-items: center; ;max-width: 50%;">
+
 <body >
   <h1>An Inaccesible System Slowly Climbs</h1>
  <p>
@@ -86,13 +95,41 @@ p{
 </p>
   <div id="hero-chart" class="top-chart">
     <iframe title="Is Brooklyn the MTA's Most Reliably ADA-Friendly Borough?" aria-label="Scatter Plot" id="datawrapper-chart-SmHQc" src="https://datawrapper.dwcdn.net/SmHQc/6/" scrolling="no" frameborder="0" style="border: none;" width="800" height="504" data-external="1"></iframe></div>
+
+    <div class="layout" style="margin: 2rem 0;">
+
+      <div class="top-chart">
+        <div id="datawrapper-vis-9oGDF" >
+          <script defer src="https://datawrapper.dwcdn.net/9oGDF/embed.js"
+                  charset="utf-8"
+                  data-target="#datawrapper-vis-9oGDF"></script>
+          <noscript>
+            <img  src="https://datawrapper.dwcdn.net/9oGDF/full.png"
+                 alt="ADA‑Approved Subway Stations (Symbol map)"
+              >
+          </noscript>
+        </div>
+      </div>
+  
+      <div class="small-multiples">
+        
+        <h2>12 Month Summary</h2>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/3wJkX/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/gcDaE/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/cec6j/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/IJXO5/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/aveGu/"></iframe></div>
+      </div>
+  
+    </div>
+
 <p>However, it must be noted that in sheer numbers, <a href="https://www.newschoolfreepress.com/2024/04/15/the-new-york-city-subway-remains-largely-inaccessible-to-the-disabled-community/" target="_blank">Brooklyn has the lowest quantity of ADA-approved subway stations.</a> 
   </p>
   
 <p> Proportionally, all boroughs do perform consistently above 90% in the above graph, with an upward trend since 2019.</p>
 <p>I am curious about 2022, and what could have contributed to citywide operability falling below average. </p>
 
-<p><strong>Crucially, any analysis of these years cannot ignore the Covid-19 pandemic. </strong>New York is certainly no exception. It's important to note that in 2023, WHO declared the pandemic to no longer be a <a href="https://www.reuters.com/business/healthcare-pharmaceuticals/covid-is-no-longer-global-health-emergency-who-2023-05-05/" target="_blank">"public health emergency of international concern."</a></p>
+<p><strong>Of course, any analysis of these years cannot ignore the Covid-19 pandemic. </strong>New York is certainly no exception. It's important to note that in 2023, WHO declared the pandemic to no longer be a <a href="https://www.reuters.com/business/healthcare-pharmaceuticals/covid-is-no-longer-global-health-emergency-who-2023-05-05/" target="_blank">"public health emergency of international concern."</a></p>
 <!-- <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Yesterday, the <a href="https://twitter.com/hashtag/COVID19?src=hash&amp;ref_src=twsrc%5Etfw">#COVID19</a> Emergency Committee met for the 15th time and recommended to me that I declare an end to the public health emergency of international concern. I have accepted that advice.<br><br>With great hope I declare COVID-19 over as a global health emergency.</p>&mdash; Tedros Adhanom Ghebreyesus (@DrTedros) <a href="https://twitter.com/DrTedros/status/1654484522358939650?ref_src=twsrc%5Etfw">May 5, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>  -->
 
 <p>Previous lawsuits against the MTA <a href="https://www.nycourts.gov/REPORTER/3dseries/2020/2020_03203.htm" target="_blank">allege that</a> "over 80% of New York City's subway stations (360 out of 427) are not equipped with any vertical accessibility, other than stairs." An obvious and massive challenge to mobility-limited riders. </p>
@@ -101,35 +138,11 @@ p{
 <p>Still, these improvements can leave many people out. For my neighborhood in Brooklyn, the nearest ADA-compliant station is at least a half mile away. </p>
 
 
-  <div class="layout">
-
-    <div class="top-chart">
-      <div id="datawrapper-vis-9oGDF" >
-        <script defer src="https://datawrapper.dwcdn.net/9oGDF/embed.js"
-                charset="utf-8"
-                data-target="#datawrapper-vis-9oGDF"></script>
-        <noscript>
-          <img  src="https://datawrapper.dwcdn.net/9oGDF/full.png"
-               alt="ADA‑Approved Subway Stations (Symbol map)"
-            >
-        </noscript>
-      </div>
-    </div>
-
-    <div class="small-multiples">
-      
-      <h2>12 Month Summary</h2>
-      <div class="chart"><iframe src="https://datawrapper.dwcdn.net/3wJkX/"></iframe></div>
-      <div class="chart"><iframe src="https://datawrapper.dwcdn.net/gcDaE/"></iframe></div>
-      <div class="chart"><iframe src="https://datawrapper.dwcdn.net/cec6j/"></iframe></div>
-      <div class="chart"><iframe src="https://datawrapper.dwcdn.net/IJXO5/"></iframe></div>
-      <div class="chart"><iframe src="https://datawrapper.dwcdn.net/aveGu/"></iframe></div>
-    </div>
-
-  </div>
-<p>Lastly, as is standard with data reporting, there are issues of data integrity. The MTA NYCT Subway Elevator and Escalator Availability <a href="https://data.ny.gov/api/views/rc78-7x78/files/6390c660-801d-4e3e-b6b5-948760a0f353?download=true&filename=MTA_SubwayElevatorAndEscalatorAvailability_Overview.pdf" target="_blank">documentation</a> lists several statistical and analytic issues, such as elevators out of service for capital rehabilitation and most third-party elevators <i>not</i> being included in their avaialability statistics, which suggests that the published final numbers are rounded up to some degree.</p>
+ 
+<p>Lastly, par for the course in data reporting, there are issues of accuracy. The MTA NYCT Subway Elevator and Escalator Availability <a href="https://data.ny.gov/api/views/rc78-7x78/files/6390c660-801d-4e3e-b6b5-948760a0f353?download=true&filename=MTA_SubwayElevatorAndEscalatorAvailability_Overview.pdf" target="_blank">documentation</a> lists several omissions from their final availability estimates, including elevators out of service for capital rehabilitation, as well as "most third-party elevators."</p>
 
 
 </body>
+</div>
 </div>
 </html>
