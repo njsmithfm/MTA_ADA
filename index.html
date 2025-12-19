@@ -42,10 +42,8 @@
     width: 90%;         /* full viewport width */
 }
 
-/* Generic iframe rule stays (width:100%) – good for the rest */
 iframe { margin:10px; display:block; width:100%; border:none; }
 
-/* NEW: specifically target the hero iframe */
 #hero-chart iframe {
     width: 100% !important;   /* overrides the HTML attribute */
     max-width: none;           /* prevents any implicit max‑width */
@@ -78,7 +76,8 @@ iframe { margin:10px; display:block; width:100%; border:none; }
 
 p{
   margin: 2rem;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  line-height: 1.65rem;
 
 }
 
@@ -114,10 +113,12 @@ p{
       <div class="small-multiples">
         
         <h2>12 Month Summary</h2>
-        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/3wJkX/"></iframe></div>
-        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/gcDaE/"></iframe></div>
-        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/cec6j/"></iframe></div>
+        
         <div class="chart"><iframe src="https://datawrapper.dwcdn.net/IJXO5/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/3wJkX/"></iframe></div>
+        
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/cec6j/"></iframe></div>
+        <div class="chart"><iframe src="https://datawrapper.dwcdn.net/gcDaE/"></iframe></div>
         <div class="chart"><iframe src="https://datawrapper.dwcdn.net/aveGu/"></iframe></div>
       </div>
   
