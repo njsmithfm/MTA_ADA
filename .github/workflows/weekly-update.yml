@@ -1,19 +1,64 @@
-
 name: Weekly MTA Dashboard Update
 on:
   schedule:
-    - cron: "0 13 * * 1" # Mondays at 13:00 UTC (8am EST/9am EDT)
-  workflow_dispatch:
+    - cron: "0 13 * * 1"   # Mondays at 13:00 UTC
+  workflow_dispatch:       # allow manual runs
 
 jobs:
   update-charts:
     runs-on: ubuntu-latest
+
     steps:
+ 
       - uses: actions/checkout@v3
+
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - run: pip install requests pandas python-dateutil python-dotenv
-      - run: python updateCharts.py
+
+ 
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+   
+      - name: Install Python deps
+        run: |
+          # If you have a requirements.txt, use it:
+          # pip install -r requirements.txt
+          pip install requests pandas python-dateutil python-dotenv
+
+  
+      - name: Connectivity sanity check 
+        run: |
+          echo "=== Checking generic HTTPS connectivity ==="
+          curl -I https://www.google.com || true
+
+          echo "=== Checking the MTA API endpoint ==="
+          # 👉 Replace the URL below with the exact one you build in
+          #    get_last_12_months_data() (including any query params).
+          #    Do NOT include the secret in the header here – the logs are public.
+          curl -v "https://<MTA_API_HOST>/<path>?<your‑query‑params>" || true
+
+
+      - name: Run updateCharts with retries       
         env:
           DATAWRAPPER_TOKEN: ${{ secrets.DATAWRAPPER_TOKEN }}
+        run: |
+          max_attempts=3
+          attempt=1
+          until python updateCharts.py; do
+            echo "Attempt $attempt failed."
+            ((attempt++))
+            if (( attempt > max_attempts )); then
+              echo "All attempts failed – exiting."
+              exit 1
+            fi
+            echo "Waiting $((attempt * 10)) seconds before next try..."
+            sleep $((attempt * 10))
+          done
