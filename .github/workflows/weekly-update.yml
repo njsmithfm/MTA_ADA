@@ -40,10 +40,8 @@ jobs:
           curl -I https://www.google.com || true
 
           echo "=== Checking the MTA API endpoint ==="
-          # 👉 Replace the URL below with the exact one you build in
-          #    get_last_12_months_data() (including any query params).
-          #    Do NOT include the secret in the header here – the logs are public.
-          curl -v "https://<MTA_API_HOST>/<path>?<your‑query‑params>" || true
+       
+          curl -v "https://data.ny.gov/resource/thh2-syn7.json" || true
 
 
       - name: Run updateCharts with retries       
