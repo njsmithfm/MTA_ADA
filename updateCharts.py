@@ -20,30 +20,17 @@ CHART_IDS = {
 def get_last_12_months_data():
     """Fetch last 12 months of data for all boroughs"""
     url = "https://data.ny.gov/resource/thh2-syn7.json"
-    
-    # Get available months
+
     params = {
-        "$select": "month",
-        "$group": "month",
-        "$order": "month DESC",
-        "$limit": 12
+        "$select": "month,borough,minutes_platforms_available,minutes_platforms_in_service,availability,platform_count",
+        "$order": "month DESC, borough",
+        "$limit": 100,
+        "$where": "month >= '2025-06-01T00:00:00'"
     }
-    months_response = requests.get(url, params=params, timeout=30)
-    months_response.raise_for_status()
-    months = [item['month'] for item in months_response.json()]
-    
-    # Fetch data for all those months
-    all_data = []
-    for month in months:
-        params = {
-            "$where": f"month='{month}'",
-            "$limit": 500
-        }
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
-        all_data.extend(response.json())
-    
-    return pd.DataFrame(all_data)
+    response = requests.get(url, params=params, timeout=60)
+    response.raise_for_status()
+
+    return pd.DataFrame(response.json())
 
 def prepare_borough_timeseries(df, borough):
     """Prepare time series data for a specific borough"""
@@ -61,15 +48,15 @@ def prepare_borough_timeseries(df, borough):
 def prepare_systemwide_timeseries(df):
     """Prepare the systemwide series from the source's systemwide rows"""
     systemwide = df[df['borough'] == 'Systemwide'].copy()
-    systemwide['availability_pct'] = systemwide['availability'].astype(float) * 100
+    systemwide['availability_pct'] = systemwide['availability'].astype(float).mul(100).round(1)
     systemwide['month_date'] = pd.to_datetime(systemwide['month'])
     systemwide = systemwide.sort_values('month_date')
-    systemwide['availability_pct'] = systemwide['availability_pct'].round(1)
-    
-    systemwide['month_date'] = systemwide['month_date'].dt.strftime('%B %Y')
-    systemwide.columns = ['Month', 'Availability %']
-    
-    return systemwide
+
+    result = systemwide[['month_date', 'availability_pct']].copy()
+    result['month_date'] = result['month_date'].dt.strftime('%B %Y')
+    result.columns = ['Month', 'Availability %']
+
+    return result
 
 def update_datawrapper_chart(chart_id, data, title):
     """Update a Datawrapper chart"""
@@ -95,8 +82,8 @@ def update_datawrapper_chart(chart_id, data, title):
 
     publish_response = requests.post(
         f"https://api.datawrapper.de/v3/charts/{chart_id}/publish",
-        headers=headers
-        ,timeout=30
+        headers=headers,
+        timeout=30,
     )
     publish_response.raise_for_status()
 
