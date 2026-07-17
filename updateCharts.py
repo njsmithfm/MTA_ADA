@@ -1,9 +1,9 @@
 import requests
 import pandas as pd
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 import os
 from dotenv import load_dotenv
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 load_dotenv()
 DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN') or os.environ.get('Datawrapper_API')
@@ -17,20 +17,39 @@ CHART_IDS = {
     'Systemwide': 'aveGu'
 }
 
+BOROUGH_ALIASES = {
+    'M': 'Manhattan',
+    'Manhattan': 'Manhattan',
+    'Bk': 'Brooklyn',
+    'Brooklyn': 'Brooklyn',
+    'Q': 'Queens',
+    'Queens': 'Queens',
+    'Bx': 'Bronx',
+    'Bronx': 'Bronx',
+    'SI': 'Staten Island',
+    'Staten Island': 'Staten Island',
+    'Systemwide': 'Systemwide',
+}
+
 def get_last_12_months_data():
     """Fetch last 12 months of data for all boroughs"""
     url = "https://data.ny.gov/resource/thh2-syn7.json"
+
+    cutoff_month = (datetime.utcnow().replace(day=1) - relativedelta(months=11)).strftime('%Y-%m-%dT00:00:00')
 
     params = {
         "$select": "month,borough,minutes_platforms_available,minutes_platforms_in_service,availability,platform_count",
         "$order": "month DESC, borough",
         "$limit": 100,
-        "$where": "month >= '2025-06-01T00:00:00'"
+        "$where": f"month >= '{cutoff_month}'"
     }
     response = requests.get(url, params=params, timeout=60)
     response.raise_for_status()
 
-    return pd.DataFrame(response.json())
+    df = pd.DataFrame(response.json())
+    df['borough'] = df['borough'].map(BOROUGH_ALIASES).fillna(df['borough'])
+
+    return df
 
 def prepare_borough_timeseries(df, borough):
     """Prepare time series data for a specific borough"""
@@ -46,10 +65,21 @@ def prepare_borough_timeseries(df, borough):
     return result
 
 def prepare_systemwide_timeseries(df):
-    """Prepare the systemwide series from the source's systemwide rows"""
-    systemwide = df[df['borough'] == 'Systemwide'].copy()
-    systemwide['availability_pct'] = systemwide['availability'].astype(float).mul(100).round(1)
-    systemwide['month_date'] = pd.to_datetime(systemwide['month'])
+    """Prepare the systemwide series from borough-level totals"""
+    borough_rows = df[df['borough'].isin(['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'])].copy()
+    borough_rows['month_date'] = pd.to_datetime(borough_rows['month'])
+    borough_rows['minutes_platforms_available'] = pd.to_numeric(borough_rows['minutes_platforms_available'])
+    borough_rows['minutes_platforms_in_service'] = pd.to_numeric(borough_rows['minutes_platforms_in_service'])
+
+    systemwide = borough_rows.groupby('month_date', as_index=False)[
+        ['minutes_platforms_available', 'minutes_platforms_in_service']
+    ].sum()
+    systemwide['availability_pct'] = (
+        systemwide['minutes_platforms_available']
+        .div(systemwide['minutes_platforms_in_service'])
+        .mul(100)
+        .round(1)
+    )
     systemwide = systemwide.sort_values('month_date')
 
     result = systemwide[['month_date', 'availability_pct']].copy()
