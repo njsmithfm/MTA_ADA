@@ -65,8 +65,8 @@ def prepare_borough_timeseries(df, borough):
     return result
 
 def prepare_systemwide_timeseries(df):
-    """Prepare the systemwide series from borough-level totals"""
-    borough_rows = df[df['borough'].isin(['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'])].copy()
+    """Prepare the systemwide series from all non-systemwide rows"""
+    borough_rows = df[df['borough'] != 'Systemwide'].copy()
     borough_rows['month_date'] = pd.to_datetime(borough_rows['month'])
     borough_rows['minutes_platforms_available'] = pd.to_numeric(borough_rows['minutes_platforms_available'])
     borough_rows['minutes_platforms_in_service'] = pd.to_numeric(borough_rows['minutes_platforms_in_service'])
