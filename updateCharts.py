@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN')
+DATAWRAPPER_TOKEN = os.environ.get('DATAWRAPPER_TOKEN') or os.environ.get('Datawrapper_API')
 
 # 5 chart IDs - one per borough + systemwide
 CHART_IDS = {
@@ -28,7 +28,8 @@ def get_last_12_months_data():
         "$order": "month DESC",
         "$limit": 12
     }
-    months_response = requests.get(url, params=params)
+    months_response = requests.get(url, params=params, timeout=30)
+    months_response.raise_for_status()
     months = [item['month'] for item in months_response.json()]
     
     # Fetch data for all those months
@@ -36,9 +37,10 @@ def get_last_12_months_data():
     for month in months:
         params = {
             "$where": f"month='{month}'",
-            "$limit": 50
+            "$limit": 500
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
         all_data.extend(response.json())
     
     return pd.DataFrame(all_data)
@@ -57,13 +59,12 @@ def prepare_borough_timeseries(df, borough):
     return result
 
 def prepare_systemwide_timeseries(df):
-    """Calculate systemwide average availability over time"""
-    df['availability_pct'] = df['availability'].astype(float) * 100
-    df['month_date'] = pd.to_datetime(df['month'])
-    
-    systemwide = df.groupby('month_date')['availability_pct'].mean().reset_index()
-    systemwide['availability_pct'] = systemwide['availability_pct'].round(1)
+    """Prepare the systemwide series from the source's systemwide rows"""
+    systemwide = df[df['borough'] == 'Systemwide'].copy()
+    systemwide['availability_pct'] = systemwide['availability'].astype(float) * 100
+    systemwide['month_date'] = pd.to_datetime(systemwide['month'])
     systemwide = systemwide.sort_values('month_date')
+    systemwide['availability_pct'] = systemwide['availability_pct'].round(1)
     
     systemwide['month_date'] = systemwide['month_date'].dt.strftime('%B %Y')
     systemwide.columns = ['Month', 'Availability %']
@@ -72,24 +73,32 @@ def prepare_systemwide_timeseries(df):
 
 def update_datawrapper_chart(chart_id, data, title):
     """Update a Datawrapper chart"""
+    if not DATAWRAPPER_TOKEN:
+        raise RuntimeError("DATAWRAPPER_TOKEN is not set")
+
     headers = {"Authorization": f"Bearer {DATAWRAPPER_TOKEN}"}
-    
-    requests.put(
+    put_response = requests.put(
         f"https://api.datawrapper.de/v3/charts/{chart_id}/data",
         headers=headers,
-        data=data.to_csv(index=False)
+        data=data.to_csv(index=False),
+        timeout=30,
     )
-    
-    requests.patch(
+    put_response.raise_for_status()
+
+    patch_response = requests.patch(
         f"https://api.datawrapper.de/v3/charts/{chart_id}",
         headers=headers,
-        json={"title": title}
+        json={"title": title},
+        timeout=30,
     )
-    
-    requests.post(
+    patch_response.raise_for_status()
+
+    publish_response = requests.post(
         f"https://api.datawrapper.de/v3/charts/{chart_id}/publish",
         headers=headers
+        ,timeout=30
     )
+    publish_response.raise_for_status()
 
 # Main execution
 print("Fetching last 12 months of MTA data...")
